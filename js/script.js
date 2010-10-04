@@ -1,11 +1,23 @@
 var playfield = {
   element: document.getElementById("play_field"),
   ctx : document.getElementById("play_field").getContext("2d"),
-  table_color: "rgba(0, 0, 200, 0.5)",
-  holder_color: "rgba(255, 0, 0, 1.0)",
-  fore_color:"rgba(0, 0, 0, 0.5)",
+  tableColor: "rgba(0, 0, 200, 0.5)",
+  holderColor: "rgba(255, 0, 0, 1.0)",
+  foreColor:"rgba(0, 0, 0, 0.5)",
   friction: .5,
   font: 'bold 20px sans-serif',
+
+  puck:{
+    "x": 300, 
+    "y": 600,
+    "currentVelocity": 1,
+    "heading": 0,
+    move:function(ms){
+      this.x = this.x + (this.currentVelocity * ms * Math.cos(heading));
+      this.y = this.y + (this.currentVelocity * ms * Math.sin(heading));
+    }
+  },
+  
   start: function(){
     this._draw();
   },
@@ -16,29 +28,29 @@ var playfield = {
     return this.element.height;
   },
   _draw: function(){
-    this.ctx.fillStyle = this.table_color;
-    this.roundedRect(0,0, this.width(), this.height(), 15)
+    this.ctx.fillStyle = this.tableColor;
+    this.roundedRect(0,0, this.width(), this.height(), 15);
     this.ctx.beginPath();
     this.ctx.moveTo(0, this.height()/2);
 
     this.ctx.lineTo(this.width(), this.height()/2);
     this.ctx.stroke();
-    this._draw_holes();
-    this._draw_slots();
+    this._drawHoles();
+    this._drawSlots();
   },
-  _draw_slots: function(){
+  _drawSlots: function(){
     var slotSize = 150;
 
-    this.ctx.fillStyle = this.fore_color;
+    this.ctx.fillStyle = this.foreColor;
     this.roundedRect(this.width()/2 - slotSize/2, 0, slotSize, 15, 5);
     this.roundedRect(this.width()/2 - slotSize/2, this.height() - 15, slotSize, 20, 5);
   },
-  _draw_holes:function(){
+  _drawHoles:function(){
     var startXDistance = 50;
     var startYDistance = 50;
     for(var y=0 ; y< 14; y++) {
       for(var i =0; i< 9; i++){
-        this.ctx.fillStyle = this.fore_color
+        this.ctx.fillStyle = this.foreColor
         this.ctx.beginPath();
         this.ctx.arc( startXDistance+ i*50, startYDistance + y*50, 1.5 , 0, Math.PI*2,false);
         this.ctx.fill();
@@ -46,8 +58,7 @@ var playfield = {
     }
   },
   _debug: function(x, y){
-    log("debugging", x,y);
-    this.ctx.fillStyle = this.table_color
+    this.ctx.fillStyle = this.tableColor
     this.ctx.textBaseline = "top";
     this.ctx.fillRect(450,650, 50,100);
     this._text(x, 450, 650);
@@ -58,14 +69,25 @@ var playfield = {
     this.ctx.strokeText  (str, x, y);
     
   },
-  showHolder: function(x, y){
+  holder: function(x, y){
+    this.player1 = {"x": x, "y": y};
     this.ctx.beginPath();
-    this.fillStyle = this.holder_color
+    this.fillStyle = this.holderColor
     this.ctx.arc(x,y, 40, 0,  Math.PI*2,false);
     this.ctx.fill();
   },
   inMyArea: function(x, y){
    return (y > this.height()/2);
+  },
+  movePuck: function(periodMs){
+    this.puck.move(periodMs);
+    this.ctx.beginPath();
+    this.drawPuck();
+  },
+  drawPuck: function(){
+    this.ctx.fillStyle = "rgba(100,100,1000,0.5)"
+    this.ctx.arc(this.puck.x, this.puck.y, 25, 0,  Math.PI*2,false);
+    this.ctx.fill();
   },
   roundedRect: function (x,y,width,height,radius){
     this.ctx.beginPath();
@@ -82,13 +104,17 @@ var playfield = {
   }
 };
 
-playfield.start();
+// playfield.start();
 
 $("#play_field").mousemove(function(e){
   playfield._debug(e.clientX, e.clientY); 
   if(playfield.inMyArea(e.clientX, e.clientY)){
     playfield.start();
-    playfield.showHolder(e.clientX, e.clientY); 
+    playfield.holder(e.clientX, e.clientY); 
   }
 });
+setInterval(function(){
+  playfield.movePuck(200);
+}, 200);
+
 
