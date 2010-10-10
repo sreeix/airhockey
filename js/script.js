@@ -1,22 +1,22 @@
 function Striker(color, xRange, yRange){
-   this.color = color,
-   this.size = 40,
-   this.position = {x: xRange[0], y: yRange[0]},
-   this.range = {x: xRange, y: yRange},
-   this.inMyArea = function(x, y){
+  this.color = color,
+  this.size = 40,
+  this.position = {x: xRange[0], y: yRange[0]},
+  this.range = {x: xRange, y: yRange},
+  this.inMyArea = function(x, y){
     return (y > yRange[0] && y < yRange[1] && x > xRange[0] && x < xRange[1]);
-   },
+  },
 
-   this.draw = function(ctx, x, y){
-     if(this.inMyArea(x, y)){
-       this.position = {"x": x, "y": y};
-     }
-     ctx.beginPath();
-     this.fillStyle = this.color;
-     ctx.arc(this.position.x, this.position.y, 40, 0,  Math.PI*2,false);
-     ctx.fill();
-   }
- };
+  this.draw = function(ctx, x, y){
+    if(this.inMyArea(x, y)){
+      this.position = {"x": x, "y": y};
+    }
+    ctx.beginPath();
+    this.fillStyle = this.color;
+    ctx.arc(this.position.x, this.position.y, 40, 0,  Math.PI*2,false);
+    ctx.fill();
+  }
+};
 
 var playfield = {
   element: document.getElementById("play_field"),
@@ -29,14 +29,11 @@ var playfield = {
   player1: new Striker("rgba(255,0,0,.5)", [0, 500], [0,350]),
   player2: new Striker("rgba(255,0,0,.5)", [0, 500], [350,700]),
   puck:{
-    "x": 300, 
-    "y": 600,
-    currentVelocity: 1,
-    heading: 0,
-    move:function(ms){
-      this.x = this.x + (this.currentVelocity * ms * Math.cos(this.heading));
-      this.y = this.y + (this.currentVelocity * ms * Math.sin(this.heading));
-    }
+    x: 300, 
+    y: 600,
+    velocity: 1,
+    heading: Math.PI,
+    radius: 25
   },
   
   start: function(){
@@ -90,17 +87,16 @@ var playfield = {
     this.ctx.strokeText  (str, x, y);
     
   },
-  movePuck: function(periodMs){
-    this.puck.move(periodMs);
+  refresh: function(){
     this.ctx.beginPath();
     this.drawPuck();
   },
   drawPuck: function(){
     this.ctx.fillStyle = "rgba(100,100,1000,0.5)"
-    this.ctx.arc(this.puck.x, this.puck.y, 25, 0,  Math.PI*2,false);
+    this.ctx.arc(this.puck.x, this.puck.y, this.puck.radius, 0,  Math.PI*2, false);
     this.ctx.fill();
   },
-  roundedRect: function (x,y,width,height,radius){
+  roundedRect: function (x, y, width, height, radius){
     this.ctx.beginPath();
     this.ctx.moveTo(x, y+radius);
     this.ctx.lineTo(x, y+height-radius);
@@ -116,14 +112,16 @@ var playfield = {
 };
 
 // playfield.start();
-
+flatworld.setBounds(playfield.width(), playfield.height());
+flatworld.addRoundObject(playfield.puck);
 $("#play_field").mousemove(function(e){
-  playfield._debug(e.clientX, e.clientY); 
+  playfield._debug(playfield.puck.x, playfield.puck.y); 
   playfield.start();
   playfield.player1.draw(playfield.ctx, e.clientX, e.clientY); 
 });
 setInterval(function(){
-  playfield.movePuck(200);
+  flatworld.update(200);
+  playfield.refresh();
 }, 200);
 
 
