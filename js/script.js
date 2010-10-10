@@ -31,8 +31,8 @@ var playfield = {
   puck:{
     x: 300, 
     y: 600,
-    velocity: 1,
-    heading: Math.PI,
+    velocity: .1,
+    heading: Math.PI/6,
     radius: 25
   },
   
@@ -119,9 +119,12 @@ $("#play_field").mousemove(function(e){
   playfield.start();
   playfield.player1.draw(playfield.ctx, e.clientX, e.clientY); 
 });
+
 setInterval(function(){
-  flatworld.update(200);
+  flatworld.update(500);
+  playfield.start();
   playfield.refresh();
-}, 200);
+  console.log(playfield.puck.x, playfield.puck.y);
+}, 500);
 
 
