@@ -1,3 +1,23 @@
+function Striker(color, xRange, yRange){
+   this.color = color,
+   this.size = 40,
+   this.position = {x: xRange[0], y: yRange[0]},
+   this.range = {x: xRange, y: yRange},
+   this.inMyArea = function(x, y){
+    return (y > yRange[0] && y < yRange[1] && x > xRange[0] && x < xRange[1]);
+   },
+
+   this.draw = function(ctx, x, y){
+     if(this.inMyArea(x, y)){
+       this.position = {"x": x, "y": y};
+     }
+     ctx.beginPath();
+     this.fillStyle = this.color;
+     ctx.arc(this.position.x, this.position.y, 40, 0,  Math.PI*2,false);
+     ctx.fill();
+   }
+ };
+
 var playfield = {
   element: document.getElementById("play_field"),
   ctx : document.getElementById("play_field").getContext("2d"),
@@ -6,15 +26,16 @@ var playfield = {
   foreColor:"rgba(0, 0, 0, 0.5)",
   friction: .5,
   font: 'bold 20px sans-serif',
-
+  player1: new Striker("rgba(255,0,0,.5)", [0, 500], [0,350]),
+  player2: new Striker("rgba(255,0,0,.5)", [0, 500], [350,700]),
   puck:{
     "x": 300, 
     "y": 600,
-    "currentVelocity": 1,
-    "heading": 0,
+    currentVelocity: 1,
+    heading: 0,
     move:function(ms){
-      this.x = this.x + (this.currentVelocity * ms * Math.cos(heading));
-      this.y = this.y + (this.currentVelocity * ms * Math.sin(heading));
+      this.x = this.x + (this.currentVelocity * ms * Math.cos(this.heading));
+      this.y = this.y + (this.currentVelocity * ms * Math.sin(this.heading));
     }
   },
   
@@ -69,16 +90,6 @@ var playfield = {
     this.ctx.strokeText  (str, x, y);
     
   },
-  holder: function(x, y){
-    this.player1 = {"x": x, "y": y};
-    this.ctx.beginPath();
-    this.fillStyle = this.holderColor
-    this.ctx.arc(x,y, 40, 0,  Math.PI*2,false);
-    this.ctx.fill();
-  },
-  inMyArea: function(x, y){
-   return (y > this.height()/2);
-  },
   movePuck: function(periodMs){
     this.puck.move(periodMs);
     this.ctx.beginPath();
@@ -108,10 +119,8 @@ var playfield = {
 
 $("#play_field").mousemove(function(e){
   playfield._debug(e.clientX, e.clientY); 
-  if(playfield.inMyArea(e.clientX, e.clientY)){
-    playfield.start();
-    playfield.holder(e.clientX, e.clientY); 
-  }
+  playfield.start();
+  playfield.player1.draw(playfield.ctx, e.clientX, e.clientY); 
 });
 setInterval(function(){
   playfield.movePuck(200);
